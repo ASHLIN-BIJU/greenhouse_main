@@ -3,8 +3,10 @@
 namespace App\Actions\Fortify;
 
 use App\Models\Address;
+use App\Models\Greenhouse;
 use App\Models\GreenhouseSetting;
 use App\Models\RegisteredProduct;
+use App\Models\Sensor;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -38,6 +40,9 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
             'product_id' => ['required', 'string'],
             'address' => ['required', 'string'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'greenhouse_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validator->after(function ($validator) use ($input) {
@@ -63,15 +68,40 @@ class CreateNewUser implements CreatesNewUsers
             RegisteredProduct::where('product_id', $input['product_id'])
                 ->update(['status' => 'used']);
 
+            // Create Greenhouse unit
+            $greenhouse = Greenhouse::create([
+                'user_id' => $user->id,
+                'product_id' => $input['product_id'],
+                'name' => $input['greenhouse_name'] ?? 'My Greenhouse',
+                'location' => $input['city'] ?? null,
+            ]);
+
             // Store address
             Address::create([
                 'user_id' => $user->id,
                 'address' => $input['address'],
+                'city' => $input['city'] ?? null,
+                'state' => $input['state'] ?? null,
             ]);
 
-            // Fill default tables/settings
+            // Initialize default sensors for this greenhouse
+            $sensors = [
+                ['sensor_type' => 'temperature', 'unit' => '°C'],
+                ['sensor_type' => 'humidity', 'unit' => '%'],
+                ['sensor_type' => 'soil_moisture', 'unit' => '%'],
+            ];
+
+            foreach ($sensors as $sensorData) {
+                Sensor::create([
+                    'greenhouse_id' => $greenhouse->id,
+                    'sensor_type' => $sensorData['sensor_type'],
+                    'unit' => $sensorData['unit'],
+                ]);
+            }
+
+            // Fill default unit settings
             GreenhouseSetting::create([
-                'user_id' => $user->id,
+                'greenhouse_id' => $greenhouse->id,
                 'temperature_limit' => 30,
                 'humidity_limit' => 70,
             ]);

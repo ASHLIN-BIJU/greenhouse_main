@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('greenhouse_settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('greenhouse_id')->constrained()->onDelete('cascade');
             $table->decimal('temperature_limit', 5, 2)->default(30.00);
             $table->decimal('humidity_limit', 5, 2)->default(70.00);
             $table->timestamps();

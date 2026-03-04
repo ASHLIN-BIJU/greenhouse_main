@@ -10,12 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('addresses', function (Blueprint $table) {
+        Schema::create('alerts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->text('address');
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
+            $table->foreignId('greenhouse_id')->constrained()->cascadeOnDelete();
+            $table->text('message');
+            $table->enum('level', ['warning', 'critical'])->default('warning');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('addresses');
+        Schema::dropIfExists('alerts');
     }
 };

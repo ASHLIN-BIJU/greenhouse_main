@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('registered_products', function (Blueprint $table) {
             $table->id();
             $table->string('product_id')->unique();
-            $table->string('status')->default('unused'); // unused, used
+            $table->enum('status', ['unused', 'used'])->default('unused');
             $table->timestamps();
         });
     }
