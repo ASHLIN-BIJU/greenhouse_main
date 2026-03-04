@@ -2,7 +2,11 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Address;
+use App\Models\GreenhouseSetting;
+use App\Models\RegisteredProduct;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -22,7 +26,7 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        Validator::make($input, [
+        $validator = Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -32,12 +36,47 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-        ])->validate();
-
-        return User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => Hash::make($input['password']),
+            'product_id' => ['required', 'string'],
+            'address' => ['required', 'string'],
         ]);
+
+        $validator->after(function ($validator) use ($input) {
+            $product = RegisteredProduct::where('product_id', $input['product_id'])->first();
+
+            if (!$product) {
+                $validator->errors()->add('product_id', 'Invalid product_id. Please check it.');
+            } elseif ($product->status === 'used') {
+                $validator->errors()->add('product_id', 'Product already registered.');
+            }
+        });
+
+        $validator->validate();
+
+        return DB::transaction(function () use ($input) {
+            $user = User::create([
+                'name' => $input['name'],
+                'email' => $input['email'],
+                'password' => Hash::make($input['password']),
+            ]);
+
+            // Update product status
+            RegisteredProduct::where('product_id', $input['product_id'])
+                ->update(['status' => 'used']);
+
+            // Store address
+            Address::create([
+                'user_id' => $user->id,
+                'address' => $input['address'],
+            ]);
+
+            // Fill default tables/settings
+            GreenhouseSetting::create([
+                'user_id' => $user->id,
+                'temperature_limit' => 30,
+                'humidity_limit' => 70,
+            ]);
+
+            return $user;
+        });
     }
 }
