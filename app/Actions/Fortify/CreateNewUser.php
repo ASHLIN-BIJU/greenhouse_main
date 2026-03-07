@@ -42,6 +42,7 @@ class CreateNewUser implements CreatesNewUsers
             'address' => ['required', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
             'state' => ['nullable', 'string', 'max:255'],
+            'pincode' => ['required', 'string', 'max:20'],
             'greenhouse_name' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -82,6 +83,7 @@ class CreateNewUser implements CreatesNewUsers
                 'address' => $input['address'],
                 'city' => $input['city'] ?? null,
                 'state' => $input['state'] ?? null,
+                'pincode' => $input['pincode'],
             ]);
 
             // Initialize default sensors for this greenhouse

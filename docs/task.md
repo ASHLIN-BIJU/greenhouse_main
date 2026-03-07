@@ -1,0 +1,28 @@
+# Task: Enable Laravel Reverb
+
+- [x] Initial Setup and Planning <!-- id: 0 -->
+    - [x] Research missing Reverb command <!-- id: 1 -->
+    - [x] Create Implementation Plan <!-- id: 2 -->
+- [x] Install Laravel Reverb <!-- id: 3 -->
+    - [x] Run `composer require laravel/reverb` <!-- id: 4 -->
+    - [x] Run `php artisan reverb:install` <!-- id: 5 -->
+- [x] Verify Installation <!-- id: 6 -->
+    - [x] Check if `php artisan reverb:start` works <!-- id: 7 -->
+    - [x] Verify environment variables in `.env` <!-- id: 8 -->
+- [x] Register Product ID <!-- id: 9 -->
+    - [x] Add "GH-908712" to `registered_products` table <!-- id: 10 -->
+- [x] Document Auth Routes <!-- id: 11 -->
+    - [x] Add route list to `routes/api.php` for visibility <!-- id: 12 -->
+- [x] Create Postman Guide <!-- id: 13 -->
+    - [x] Draft `postman_guide.md` with instructions <!-- id: 14 -->
+- [x] Add Pincode to Address <!-- id: 15 -->
+    - [x] Create and run migration <!-- id: 16 -->
+    - [x] Update Model and CreateNewUser action <!-- id: 17 -->
+    - [x] Update Postman guide <!-- id: 18 -->
+- [x] Register Additional Product ID <!-- id: 19 -->
+    - [x] Add "GH-112233" to `registered_products` table <!-- id: 20 -->
+    - [x] Provide new registration data <!-- id: 21 -->
+- [x] Create WebSocket Documentation <!-- id: 22 -->
+    - [x] Document sensor to Reverb flow with Alice example <!-- id: 23 -->
+- [x] Create Auth API Documentation <!-- id: 24 -->
+    - [x] Formalize registration and login flow for developers <!-- id: 25 -->
