@@ -9,6 +9,7 @@
         "php": "^8.2",
         "laravel/fortify": "^1.35",
         "laravel/framework": "^11.31",
+        "laravel/reverb": "^1.0@beta",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.9"
     },
