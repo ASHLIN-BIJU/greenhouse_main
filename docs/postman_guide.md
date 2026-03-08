@@ -57,6 +57,31 @@ This guide explains how to test the authentication endpoints for your Greenhouse
 
 ---
 
+## 4. Test Sensor Data (WebSocket Broadcast)
+To test if your WebSocket is working, you can simulate a sensor device sending data.
+
+**Method:** `POST`  
+**URL:** `http://localhost:8000/api/sensor-data`  
+**Headers:**
+- `Accept`: `application/json`
+- `Content-Type`: `application/json`
+
+**Body (Raw JSON):**
+```json
+{
+    "device_id": "GH-112233",
+    "temperature": 28.5,
+    "humidity": 70.2,
+    "soil_moisture": 45.0
+}
+```
+
+> [!IMPORTANT]
+> 1. Ensure `php artisan reverb:start` is running in a terminal.
+> 2. Open Alice's Dashboard (or your WebSocket client) to see the live update when you click **Send** in Postman.
+
+---
+
 ## Troubleshooting Tips
 - **CSRF Issues:** If you get a `419 Page Expired`, ensure you are calling `GET http://localhost:8000/sanctum/csrf-cookie` first in Postman to initialize the session.
 - **Validation Errors:** If you get a `422 Unprocessable Entity`, check the response body for specific field errors.
