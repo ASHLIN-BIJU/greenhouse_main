@@ -1,22 +1,24 @@
-# Sensor & WebSocket Documentation (Alice's Example)
-
-This document explains how sensor data flows from a device to the dashboard in real-time using Laravel Reverb.
-
 ## 1. The Data Flow
-The process follows these four main steps:
+The process follows these three main steps to get data from the physical sensor into your dashboard:
 
-```mermaid
-graph TD
-    A[Sensor Device] -->|1. POST Request| B[Laravel API]
-    B -->|2. Store Data| C[(Database)]
-    B -->|3. Dispatch Event| D[SensorDataUpdated Event]
-    D -->|4. Broadcast| E[Laravel Reverb]
-    E -->|5. Push Update| F[Alice's Dashboard]
-```
+### A. How data reaches the database
+The physical sensor (like an ESP32 or Arduino) is programmed to send an HTTP **POST** request to your server's API endpoint: `/api/sensor-data`. This request contains the `device_id` and the current readings.
+
+### B. How the database stores the data
+When the request hits the server, the `SensorDataController` takes the data and uses a Laravel model called `SensorReading` to save it.
+- **Table:** `sensor_readings`
+- **Action:** `SensorReading::create($validated)`
+This ensures you have a permanent historical record of every reading.
+
+### C. How actions (broadcasts) are performed
+Immediately after saving to the database, the controller performs an **Action** by triggering a **WebSocket Broadcast**.
+- **Event:** `SensorDataUpdated`
+- **Dispatcher:** `SensorDataUpdated::dispatch(...)`
+- **Reverb Service:** Laravel Reverb (the WebSocket server) catches this event and pushes the data to any dashboard listening on the `greenhouse.{deviceId}` channel.
 
 ---
 
-## 2. Step-by-Step Example: Alice
+## 2. Alice's Example (Full Cycle)
 Let's use Alice's Greenhouse (Product ID: `GH-112233`) as an example.
 
 ### A. Sending Sensor Data

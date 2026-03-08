@@ -2,18 +2,26 @@
 
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
-
-// Laravel Fortify handles Login and Registration routes automatically.
-// Since 'prefix' => 'api' is set in config/fortify.php, the following routes are available:
-//
-// [POST]  /api/login             -> Login
-// [GET]   /api/login             -> Login View (if enabled)
-// [POST]  /api/register          -> Register
-// [GET]   /api/register          -> Register View (if enabled)
-// [POST]  /api/logout            -> Logout (Overridden below)
-// [GET]   /api/user/confirm-password
-// [POST]  /api/user/confirm-password
+use App\Http\Controllers\Api\SensorDataController;
+use App\Http\Controllers\Api\DeviceControlController;
+use App\Http\Controllers\Api\GreenhouseSettingController;
+use App\Http\Controllers\Api\NotificationController;
 
 // Override Fortify's default logout to use Sanctum for API
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth:sanctum');
+
+// Authenticated Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/greenhouse/settings', [GreenhouseSettingController::class, 'update']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+});
+
+// Sensor Data and Device Control Routes
+Route::post('/sensor-data', [SensorDataController::class, 'store']);
+Route::post('/device-control', [DeviceControlController::class, 'update']);
+
+Route::get('/test', function () {
+    return 'api test';
+});

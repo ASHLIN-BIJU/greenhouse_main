@@ -106,6 +106,7 @@ class CreateNewUser implements CreatesNewUsers
                 'greenhouse_id' => $greenhouse->id,
                 'temperature_limit' => 30,
                 'humidity_limit' => 70,
+                'soil_moisture_limit' => 40,
             ]);
 
             return $user;

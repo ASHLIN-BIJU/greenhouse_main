@@ -1,27 +1,37 @@
-# Add Pincode to Address
+# Automated Temperature & Environment Notifications
 
-The user wants to add a `pincode` field to the address information. This requires updating the database schema, models, and the registration logic.
+The goal is to automatically generate notifications (alerts) when sensor readings exceed the limits set by the user, and provide an API for the "Notification Page" to display them.
 
 ## Proposed Changes
 
-### [Database]
-#### [NEW] [add_pincode_to_addresses_table.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/database/migrations/2026_03_07_000000_add_pincode_to_addresses_table.php)
-- Create migration to add `pincode` column to `addresses` table.
+### [API Layer]
 
-### [Models]
-#### [MODIFY] [Address.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Models/Address.php)
-- Add `pincode` to `$fillable`.
+#### [MODIFY] [SensorDataController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/SensorDataController.php)
+- Update the `store` method.
+- Fetch the user's `GreenhouseSetting` for the device's greenhouse.
+- Compare incoming `temperature`, `humidity`, and `soil_moisture` with the limits.
+- If a limit is exceeded, create a new record in the `alerts` table:
+    - Example: `High Temperature Alert: 35°C (Limit: 30°C)`
+    - Level: `warning` or `critical` based on the deviation.
 
-### [Actions]
-#### [MODIFY] [CreateNewUser.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Actions/Fortify/CreateNewUser.php)
-- Update validation to include `pincode` (required, string).
-- Update `Address::create()` to include `pincode`.
+#### [NEW] [NotificationController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/NotificationController.php)
+- Create a controller with an `index` method to return the latest alerts for the authenticated user.
+- Add a `markAsRead` (optional) or `destroy` method if needed.
 
-### [Documentation]
-#### [MODIFY] [postman_guide.md](file:///home/ashlin/.gemini/antigravity/brain/a7ac01e9-2720-4773-94b4-576ba51c2749/postman_guide.md)
-- Update registration body example to include `pincode`.
+#### [MODIFY] [api.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/routes/api.php)
+- Add `GET /api/notifications` route protected by `auth:sanctum`.
+
+---
 
 ## Verification Plan
+
 ### Automated Tests
-- Run `php artisan migrate`.
-- Test registration endpoint via Postman or script to ensure `pincode` is saved correctly.
+- **Test Case 1: Threshold Breach**
+    - Send sensor data exceeding the `temperature_limit`.
+    - Verify a new record exists in the `alerts` table.
+- **Test Case 2: Notification API**
+    - Call `GET /api/notifications` as the user.
+    - Verify the list contains the newly created alert.
+
+### Manual Verification
+- Trigger an alert via Postman and check the database/API response.
