@@ -53,3 +53,8 @@ php artisan reverb:start
 - Modified `SensorDataController` to only store a reading if the data has changed from the previous entry for the same device.
 - This prevents redundant data from cluttering the database while maintaining real-time broadcasts for every signal.
 - Verified with multiple POST requests, confirming that identical data returns a "Data unchanged" message and skips storage.
+
+## Customizable Greenhouse Settings
+- Added support for Temperature, Humidity, and **Soil Moisture** threshold limits.
+- Users can now customize these settings via the `PUT /api/greenhouse/settings` endpoint.
+- Added documentation explaining the logic and automated trigger flows.

@@ -98,7 +98,8 @@ Allows an authenticated user to update their greenhouse threshold settings.
 ```json
 {
     "temperature_limit": 32.5,
-    "humidity_limit": 65.0
+    "humidity_limit": 65.0,
+    "soil_moisture_limit": 45.0
 }
 ```
 

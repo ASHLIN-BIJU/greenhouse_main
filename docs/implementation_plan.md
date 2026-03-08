@@ -1,35 +1,37 @@
-# Conditional Sensor Data Storage
+# User-Adjustable Greenhouse Settings
 
-The goal is to modify the `SensorDataController` so that it only stores a new `SensorReading` if the incoming data is different from the most recent reading for that `device_id`. Real-time broadcasts via WebSockets must continue for every request regardless of storage.
+This feature allows authenticated users to update the threshold settings for their greenhouse, such as temperature and humidity limits.
 
 ## Proposed Changes
 
 ### [API Layer]
 
-#### [MODIFY] [SensorDataController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/SensorDataController.php)
-- Update the `store` method.
-- Fetch the latest `SensorReading` for the given `device_id`.
-- Compare `temperature`, `humidity`, and `soil_moisture` of the new request with the latest reading.
-- Only call `SensorReading::create($validated)` if at least one value has changed.
-- Always dispatch the `SensorDataUpdated` event to ensure the dashboard reflects the current status.
-- Return a JSON response indicating whether the data was stored or only broadcasted.
+#### [NEW] [GreenhouseSettingController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/GreenhouseSettingController.php)
+- Create a new controller with an `update` method.
+- The method will:
+    - Validate the input (`temperature_limit`, `humidity_limit`).
+    - Retrieve the authenticated user's greenhouse.
+    - Update the associated `GreenhouseSetting` record.
+    - Return the updated settings as JSON.
 
----
+#### [MODIFY] [api.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/routes/api.php)
+- Add a new `PUT/PATCH` route for `/greenhouse/settings` protected by `auth:sanctum`.
+
+### [Documentation]
+
+#### [MODIFY] [postman_guide.md](file:///home/ashlin/.gemini/antigravity/brain/a7ac01e9-2720-4773-94b4-576ba51c2749/postman_guide.md)
+- Add a section on how to update greenhouse settings.
 
 ## Verification Plan
 
 ### Automated Tests
-- **Test Case 1: Initial Data Storage**
-  - Send a POST request to `/api/sensor-data` for a new `device_id`.
-  - Verify the response indicates data was stored (status code 200).
-- **Test Case 2: Redundant Data Prevention**
-  - Send the *exact same* data again for the same `device_id`.
-  - Verify the response indicates "Data unchanged; broadcasted only".
-  - Check the `sensor_readings` table to ensure no new row was added.
-- **Test Case 3: Changed Data Storage**
-  - Change one value (e.g., temperature) and send the request.
-  - Verify the response indicates data was stored.
-  - Check the `sensor_readings` table to confirm the new row is present.
-
-### Manual Verification
-- Observe the WebSocket dashboard while sending identical data from Postman to ensure real-time updates are still firing even when database storage is skipped.
+- **Test Case 1: Update Settings (Authenticated)**
+    - Log in as a user and get a Sanctum token.
+    - Send a `PUT` request to `/api/greenhouse/settings` with new limits.
+    - Verify the database record in `greenhouse_settings` is updated.
+- **Test Case 2: Update Settings (Unauthenticated)**
+    - Send the same request without a token.
+    - Verify it returns a `401 Unauthorized`.
+- **Test Case 3: Validation Check**
+    - Send invalid data (e.g., non-numeric limits).
+    - Verify it returns a `422 Unprocessable Entity`.

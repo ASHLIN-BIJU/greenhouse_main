@@ -15,6 +15,7 @@ class GreenhouseSettingController extends Controller
         $validated = $request->validate([
             'temperature_limit' => 'nullable|numeric',
             'humidity_limit' => 'nullable|numeric',
+            'soil_moisture_limit' => 'nullable|numeric',
         ]);
 
         $user = Auth::user();

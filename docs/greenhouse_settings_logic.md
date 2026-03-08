@@ -7,6 +7,7 @@ When a user registers their greenhouse using a `product_id`, the system automati
 
 - **Default Temperature Limit:** 30.0 °C
 - **Default Humidity Limit:** 70.0 %
+- **Default Soil Moisture Limit:** 40.0 %
 
 This is handled in the `CreateNewUser` action during the registration process.
 
@@ -28,6 +29,7 @@ The system uses these thresholds to perform automated actions:
 - **Trigger:**
     - If `Temperature > Temperature Limit` -> System sends a signal to turn on the **Cooling Fan**.
     - If `Humidity > Humidity Limit` -> System sends a signal to turn on the **Exhaust**.
+    - If `Soil Moisture < Soil Moisture Limit` -> System sends a signal to turn on the **Water Pump**.
 
 > [!NOTE]
 > By allowing users to change these settings, the greenhouse becomes "intelligent" to their specific needs rather than just following a hard-coded default.

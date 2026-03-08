@@ -42,3 +42,9 @@
 - [x] Conditional Sensor Data Storage <!-- id: 39 -->
     - [x] Update `SensorDataController@store` logic <!-- id: 40 -->
     - [x] Verify with Postman (storage only on change) <!-- id: 41 -->
+- [x] Customizable Greenhouse Settings <!-- id: 42 -->
+    - [x] Create `GreenhouseSettingController` and route <!-- id: 43 -->
+    - [x] Update Postman guide with settings update endpoint <!-- id: 44 -->
+    - [x] Verify settings update logic <!-- id: 45 -->
+- [x] Document Greenhouse Settings Logic <!-- id: 46 -->
+    - [x] Create `greenhouse_settings_logic.md` <!-- id: 47 -->
