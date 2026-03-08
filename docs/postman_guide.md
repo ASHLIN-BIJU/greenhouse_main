@@ -103,6 +103,19 @@ Allows an authenticated user to update their greenhouse threshold settings.
 }
 ```
 
+### Notifications (Alerts)
+Manage environmental alerts triggered by threshold breaches.
+
+**Get Notifications**
+- **Method:** `GET`
+- **URL:** `http://localhost:8000/api/notifications`
+- **Headers:** `Accept: application/json`, `Authorization: Bearer <TOKEN>`
+
+**Delete Notification**
+- **Method:** `DELETE`
+- **URL:** `http://localhost:8000/api/notifications/{id}`
+- **Headers:** `Accept: application/json`, `Authorization: Bearer <TOKEN>`
+
 ---
 
 ## Troubleshooting Tips
