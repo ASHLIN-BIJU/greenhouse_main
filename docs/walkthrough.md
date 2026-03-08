@@ -48,3 +48,8 @@ php artisan reverb:start
 - Added `pincode` field to the `addresses` table.
 - Updated `CreateNewUser` logic to require and save `pincode` during registration.
 - Updated `postman_guide.md` with the updated registration payload.
+
+## Conditional Sensor Storage
+- Modified `SensorDataController` to only store a reading if the data has changed from the previous entry for the same device.
+- This prevents redundant data from cluttering the database while maintaining real-time broadcasts for every signal.
+- Verified with multiple POST requests, confirming that identical data returns a "Data unchanged" message and skips storage.

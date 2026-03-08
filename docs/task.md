@@ -26,3 +26,19 @@
     - [x] Document sensor to Reverb flow with Alice example <!-- id: 23 -->
 - [x] Create Auth API Documentation <!-- id: 24 -->
     - [x] Formalize registration and login flow for developers <!-- id: 25 -->
+- [x] Push Changes to GitHub <!-- id: 26 -->
+    - [x] Create `ashlin-dev` branch and push code/docs <!-- id: 27 -->
+- [x] Update Postman Guide for Sensor Testing <!-- id: 28 -->
+    - [x] Add sensor data broadcast testing instructions <!-- id: 29 -->
+- [x] Fix Database Connection Error <!-- id: 30 -->
+    - [x] Create dedicated DB user and update .env <!-- id: 31 -->
+- [x] Resolve XAMPP/MariaDB Conflict <!-- id: 32 -->
+    - [x] Stop system MariaDB and restart XAMPP <!-- id: 33 -->
+- [x] Fix 404 Route Error <!-- id: 34 -->
+    - [x] Add `sensor-data` and `device-control` to `api.php` <!-- id: 35 -->
+    - [x] Verify with Postman and notify user <!-- id: 36 -->
+- [x] Fix Reverb Connectivity Error <!-- id: 37 -->
+    - [x] Start and maintain Reverb server in separate terminal <!-- id: 38 -->
+- [x] Conditional Sensor Data Storage <!-- id: 39 -->
+    - [x] Update `SensorDataController@store` logic <!-- id: 40 -->
+    - [x] Verify with Postman (storage only on change) <!-- id: 41 -->
