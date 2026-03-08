@@ -82,6 +82,28 @@ To test if your WebSocket is working, you can simulate a sensor device sending d
 
 ---
 
+---
+
+## 5. Update Greenhouse Settings
+Allows an authenticated user to update their greenhouse threshold settings.
+
+**Method:** `PUT`  
+**URL:** `http://localhost:8000/api/greenhouse/settings`  
+**Headers:**
+- `Accept`: `application/json`
+- `Content-Type`: `application/json`
+- `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
+
+**Body (Raw JSON):**
+```json
+{
+    "temperature_limit": 32.5,
+    "humidity_limit": 65.0
+}
+```
+
+---
+
 ## Troubleshooting Tips
 - **CSRF Issues:** If you get a `419 Page Expired`, ensure you are calling `GET http://localhost:8000/sanctum/csrf-cookie` first in Postman to initialize the session.
 - **Validation Errors:** If you get a `422 Unprocessable Entity`, check the response body for specific field errors.
