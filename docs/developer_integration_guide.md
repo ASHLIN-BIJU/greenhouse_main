@@ -14,6 +14,7 @@ The system uses a MySQL database (XAMPP/MariaDB). Below are the primary tables w
 | `sensors` | Metadata about installed sensors | `id`, `greenhouse_id`, `sensor_type`, `unit` |
 | `users` | Authenticated user accounts | `id`, `name`, `email`, `password` |
 | `addresses` | User contact information | `id`, `user_id`, `address`, `city`, `state`, `pincode` |
+| `alerts` | Notification alerts | `id`, `greenhouse_id`, `message`, `level`, `created_at` |
 
 ---
 
@@ -28,6 +29,11 @@ The system uses a MySQL database (XAMPP/MariaDB). Below are the primary tables w
 - **PUT** `/api/greenhouse/settings`: Update thresholds for temperature, humidity, and soil moisture.
   - *Requires:* Authorization Bearer Token.
   - *Payload Example:* `{"temperature_limit": 30.0, "humidity_limit": 70.0, "soil_moisture_limit": 40.0}`
+
+### Notifications
+- **GET** `/api/notifications`: Get latest alerts (paginated).
+  - *Requires:* Authorization Bearer Token.
+- **DELETE** `/api/notifications/{id}`: Delete a specific notification.
 
 ### Sensor Data (Device Interaction)
 - **POST** `/api/sensor-data`: Devices send telemetry here.

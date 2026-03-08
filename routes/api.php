@@ -5,6 +5,7 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\Api\SensorDataController;
 use App\Http\Controllers\Api\DeviceControlController;
 use App\Http\Controllers\Api\GreenhouseSettingController;
+use App\Http\Controllers\Api\NotificationController;
 
 // Override Fortify's default logout to use Sanctum for API
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -13,6 +14,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
 // Authenticated Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/greenhouse/settings', [GreenhouseSettingController::class, 'update']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 });
 
 // Sensor Data and Device Control Routes

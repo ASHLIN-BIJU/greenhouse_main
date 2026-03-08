@@ -1,37 +1,37 @@
-# User-Adjustable Greenhouse Settings
+# Automated Temperature & Environment Notifications
 
-This feature allows authenticated users to update the threshold settings for their greenhouse, such as temperature and humidity limits.
+The goal is to automatically generate notifications (alerts) when sensor readings exceed the limits set by the user, and provide an API for the "Notification Page" to display them.
 
 ## Proposed Changes
 
 ### [API Layer]
 
-#### [NEW] [GreenhouseSettingController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/GreenhouseSettingController.php)
-- Create a new controller with an `update` method.
-- The method will:
-    - Validate the input (`temperature_limit`, `humidity_limit`).
-    - Retrieve the authenticated user's greenhouse.
-    - Update the associated `GreenhouseSetting` record.
-    - Return the updated settings as JSON.
+#### [MODIFY] [SensorDataController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/SensorDataController.php)
+- Update the `store` method.
+- Fetch the user's `GreenhouseSetting` for the device's greenhouse.
+- Compare incoming `temperature`, `humidity`, and `soil_moisture` with the limits.
+- If a limit is exceeded, create a new record in the `alerts` table:
+    - Example: `High Temperature Alert: 35°C (Limit: 30°C)`
+    - Level: `warning` or `critical` based on the deviation.
+
+#### [NEW] [NotificationController.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/app/Http/Controllers/Api/NotificationController.php)
+- Create a controller with an `index` method to return the latest alerts for the authenticated user.
+- Add a `markAsRead` (optional) or `destroy` method if needed.
 
 #### [MODIFY] [api.php](file:///home/ashlin/Desktop/greenhouse_main/greenhouse_main/routes/api.php)
-- Add a new `PUT/PATCH` route for `/greenhouse/settings` protected by `auth:sanctum`.
+- Add `GET /api/notifications` route protected by `auth:sanctum`.
 
-### [Documentation]
-
-#### [MODIFY] [postman_guide.md](file:///home/ashlin/.gemini/antigravity/brain/a7ac01e9-2720-4773-94b4-576ba51c2749/postman_guide.md)
-- Add a section on how to update greenhouse settings.
+---
 
 ## Verification Plan
 
 ### Automated Tests
-- **Test Case 1: Update Settings (Authenticated)**
-    - Log in as a user and get a Sanctum token.
-    - Send a `PUT` request to `/api/greenhouse/settings` with new limits.
-    - Verify the database record in `greenhouse_settings` is updated.
-- **Test Case 2: Update Settings (Unauthenticated)**
-    - Send the same request without a token.
-    - Verify it returns a `401 Unauthorized`.
-- **Test Case 3: Validation Check**
-    - Send invalid data (e.g., non-numeric limits).
-    - Verify it returns a `422 Unprocessable Entity`.
+- **Test Case 1: Threshold Breach**
+    - Send sensor data exceeding the `temperature_limit`.
+    - Verify a new record exists in the `alerts` table.
+- **Test Case 2: Notification API**
+    - Call `GET /api/notifications` as the user.
+    - Verify the list contains the newly created alert.
+
+### Manual Verification
+- Trigger an alert via Postman and check the database/API response.

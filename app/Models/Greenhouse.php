@@ -12,4 +12,14 @@ class Greenhouse extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function settings()
+    {
+        return $this->hasOne(GreenhouseSetting::class);
+    }
+
+    public function sensors()
+    {
+        return $this->hasMany(Sensor::class);
+    }
 }

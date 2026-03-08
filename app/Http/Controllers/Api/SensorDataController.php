@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SensorReading;
+use App\Models\Greenhouse;
+use App\Models\Alert;
 use App\Events\SensorDataUpdated;
 use Illuminate\Http\Request;
 
@@ -34,6 +36,42 @@ class SensorDataController extends Controller
             // Store data if there's a change or it's the first reading
             SensorReading::create($validated);
             $stored = true;
+
+            // 4. Check for threshold breaches and trigger alerts
+            $greenhouse = Greenhouse::where('product_id', $validated['device_id'])->first();
+            if ($greenhouse && $greenhouse->settings) {
+                $settings = $greenhouse->settings;
+                $alerts = [];
+
+                if ($validated['temperature'] > $settings->temperature_limit) {
+                    $alerts[] = [
+                        'message' => "High Temperature Alert: {$validated['temperature']}°C (Limit: {$settings->temperature_limit}°C)",
+                        'level' => 'warning'
+                    ];
+                }
+
+                if ($validated['humidity'] > $settings->humidity_limit) {
+                    $alerts[] = [
+                        'message' => "High Humidity Alert: {$validated['humidity']}% (Limit: {$settings->humidity_limit}%)",
+                        'level' => 'warning'
+                    ];
+                }
+
+                if ($validated['soil_moisture'] < $settings->soil_moisture_limit) {
+                    $alerts[] = [
+                        'message' => "Low Soil Moisture Alert: {$validated['soil_moisture']}% (Limit: {$settings->soil_moisture_limit}%)",
+                        'level' => 'warning'
+                    ];
+                }
+
+                foreach ($alerts as $alertData) {
+                    Alert::create([
+                        'greenhouse_id' => $greenhouse->id,
+                        'message' => $alertData['message'],
+                        'level' => $alertData['level'],
+                    ]);
+                }
+            }
         }
 
         // 3. Always dispatch the broadcast event for real-time dashboard updates

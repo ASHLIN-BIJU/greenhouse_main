@@ -1,42 +1,5 @@
-# Task: Enable Laravel Reverb
+# Task List
 
-- [x] Initial Setup and Planning <!-- id: 0 -->
-    - [x] Research missing Reverb command <!-- id: 1 -->
-    - [x] Create Implementation Plan <!-- id: 2 -->
-- [x] Install Laravel Reverb <!-- id: 3 -->
-    - [x] Run `composer require laravel/reverb` <!-- id: 4 -->
-    - [x] Run `php artisan reverb:install` <!-- id: 5 -->
-- [x] Verify Installation <!-- id: 6 -->
-    - [x] Check if `php artisan reverb:start` works <!-- id: 7 -->
-    - [x] Verify environment variables in `.env` <!-- id: 8 -->
-- [x] Register Product ID <!-- id: 9 -->
-    - [x] Add "GH-908712" to `registered_products` table <!-- id: 10 -->
-- [x] Document Auth Routes <!-- id: 11 -->
-    - [x] Add route list to `routes/api.php` for visibility <!-- id: 12 -->
-- [x] Create Postman Guide <!-- id: 13 -->
-    - [x] Draft `postman_guide.md` with instructions <!-- id: 14 -->
-- [x] Add Pincode to Address <!-- id: 15 -->
-    - [x] Create and run migration <!-- id: 16 -->
-    - [x] Update Model and CreateNewUser action <!-- id: 17 -->
-    - [x] Update Postman guide <!-- id: 18 -->
-- [x] Register Additional Product ID <!-- id: 19 -->
-    - [x] Add "GH-112233" to `registered_products` table <!-- id: 20 -->
-    - [x] Provide new registration data <!-- id: 21 -->
-- [x] Create WebSocket Documentation <!-- id: 22 -->
-    - [x] Document sensor to Reverb flow with Alice example <!-- id: 23 -->
-- [x] Create Auth API Documentation <!-- id: 24 -->
-    - [x] Formalize registration and login flow for developers <!-- id: 25 -->
-- [x] Push Changes to GitHub <!-- id: 26 -->
-    - [x] Create `ashlin-dev` branch and push code/docs <!-- id: 27 -->
-- [x] Update Postman Guide for Sensor Testing <!-- id: 28 -->
-    - [x] Add sensor data broadcast testing instructions <!-- id: 29 -->
-- [x] Fix Database Connection Error <!-- id: 30 -->
-    - [x] Create dedicated DB user and update .env <!-- id: 31 -->
-- [x] Resolve XAMPP/MariaDB Conflict <!-- id: 32 -->
-    - [x] Stop system MariaDB and restart XAMPP <!-- id: 33 -->
-- [x] Fix 404 Route Error <!-- id: 34 -->
-    - [x] Add `sensor-data` and `device-control` to `api.php` <!-- id: 35 -->
-    - [x] Verify with Postman and notify user <!-- id: 36 -->
 - [x] Fix Reverb Connectivity Error <!-- id: 37 -->
     - [x] Start and maintain Reverb server in separate terminal <!-- id: 38 -->
 - [x] Conditional Sensor Data Storage <!-- id: 39 -->
@@ -48,3 +11,11 @@
     - [x] Verify settings update logic <!-- id: 45 -->
 - [x] Document Greenhouse Settings Logic <!-- id: 46 -->
     - [x] Create `greenhouse_settings_logic.md` <!-- id: 47 -->
+- [x] Create Developer Integration Guide <!-- id: 48 -->
+    - [x] Draft `developer_integration_guide.md` <!-- id: 49 -->
+    - [x] Include DB schema and API summary <!-- id: 50 -->
+- [/] Temperature & Environment Notifications <!-- id: 51 -->
+    - [x] Update `SensorDataController` to trigger alerts <!-- id: 52 -->
+    - [x] Create `NotificationController` and API route <!-- id: 53 -->
+    - [/] Verify alert triggering and notification API <!-- id: 55 -->
+    - [x] Update `developer_integration_guide.md` with Notification API <!-- id: 54 -->
