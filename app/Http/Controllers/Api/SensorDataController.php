@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 
 class SensorDataController extends Controller
 {
+    use \App\Traits\HandlesAutomation;
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -36,55 +38,14 @@ class SensorDataController extends Controller
             // Store data if there's a change or it's the first reading
             SensorReading::create($validated);
             $stored = true;
+        }
 
-            // 4. Check for threshold breaches and trigger alerts
-            $greenhouse = Greenhouse::where('product_id', $validated['device_id'])->first();
-            if ($greenhouse && $greenhouse->settings) {
-                $settings = $greenhouse->settings;
-                $alerts = [];
+        // 4. Area & Automation Logic
+        $greenhouse = Greenhouse::where('product_id', $validated['device_id'])->first();
+        $automationResult = [];
 
-                if ($validated['temperature'] > $settings->temperature_limit) {
-                    $alerts[] = [
-                        'message' => "High Temperature Alert: {$validated['temperature']}°C (Limit: {$settings->temperature_limit}°C)",
-                        'level' => 'warning'
-                    ];
-                }
-
-                if ($validated['humidity'] > $settings->humidity_limit) {
-                    $alerts[] = [
-                        'message' => "High Humidity Alert: {$validated['humidity']}% (Limit: {$settings->humidity_limit}%)",
-                        'level' => 'warning'
-                    ];
-                }
-
-                if ($validated['soil_moisture'] < $settings->soil_moisture_limit) {
-                    $alerts[] = [
-                        'message' => "Low Soil Moisture Alert: {$validated['soil_moisture']}% (Limit: {$settings->soil_moisture_limit}%)",
-                        'level' => 'warning'
-                    ];
-                }
-
-                foreach ($alerts as $alertData) {
-                    Alert::create([
-                        'greenhouse_id' => $greenhouse->id,
-                        'message' => $alertData['message'],
-                        'level' => $alertData['level'],
-                    ]);
-                }
-
-                // 5. Auto Control Logic
-                if ($settings->control_mode === 'auto') {
-                    $pumpMode = $validated['soil_moisture'] < $settings->soil_moisture_limit;
-                    $exhaustMode = $validated['temperature'] > $settings->temperature_limit ||
-                        $validated['humidity'] > $settings->humidity_limit;
-
-                    \App\Events\ControlUpdated::dispatch(
-                        $validated['device_id'],
-                        $pumpMode,
-                        $exhaustMode
-                    );
-                }
-            }
+        if ($greenhouse) {
+            $automationResult = $this->runAutomation($greenhouse);
         }
 
         // 3. Always dispatch the broadcast event for real-time dashboard updates
@@ -96,8 +57,10 @@ class SensorDataController extends Controller
         );
 
         return response()->json([
-            'message' => $stored ? 'Sensor data stored and broadcasted' : 'Data unchanged; broadcasted only',
-            'stored' => $stored
+            'message' => $stored ? 'Sensor data stored' : 'Data unchanged',
+            'stored' => $stored,
+            'area_temperature' => $automationResult['area_temperature'] ?? null,
+            'location' => $greenhouse?->location
         ]);
     }
 }

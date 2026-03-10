@@ -79,6 +79,7 @@ To test if your WebSocket is working, you can simulate a sensor device sending d
 > [!IMPORTANT]
 > 1. Ensure `php artisan reverb:start` is running in a terminal.
 > 2. Open Alice's Dashboard (or your WebSocket client) to see the live update when you click **Send** in Postman.
+> 3. The API response will now include `area_temperature`, which is the average temperature for all devices in that city/location.
 
 ---
 
@@ -128,6 +129,45 @@ Allows an authenticated user to manually override device states.
 ```
 > [!IMPORTANT]
 > Sending a manual control command will **automatically switch the greenhouse to `manual` mode**. To resume automation, you must update the settings back to `control_mode: auto`.
+
+---
+
+## 7. Synchronize Automation (No-Payload Trigger)
+Allows you to trigger automation for a specific greenhouse using only the `product_id`. It will automatically fetch the latest sensor data from the database and run threshold checks.
+
+**Method:** `POST`  
+**URL:** `http://localhost:8000/api/greenhouse/sync`  
+**Headers:**
+- `Accept`: `application/json`
+- `Content-Type`: `application/json`
+
+**Body (Raw JSON):**
+```json
+{
+    "product_id": "GH-112233",
+    "mode": "auto"
+}
+```
+> [!TIP]
+> Use this endpoint when you want current database values to trigger the pump/exhaust without sending a full sensor payload. You can also use it to force a switch back to `auto` mode.
+
+---
+
+## 8. Detailed Testing Workflows
+
+## 9. Disease Review API
+Fetch and view plant diseases fetched from the external API.
+
+**List All Diseases:**
+- **Method:** `GET`
+- **URL:** `http://localhost:8000/api/disease`
+
+**View Specific Disease:**
+- **Method:** `GET`
+- **URL:** `http://localhost:8000/api/disease/{id}`
+
+> [!NOTE]
+> Data is automatically fetched every 4 hours via the `fetch:disease-data` command. You can trigger it manually using `php artisan fetch:disease-data`.
 
 ---
 

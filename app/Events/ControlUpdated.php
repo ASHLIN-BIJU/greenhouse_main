@@ -17,6 +17,7 @@ class ControlUpdated implements ShouldBroadcast
     public function __construct(
         public string $deviceId,
         public bool $pumpMode,
+        public bool $acMode,
         public bool $exhaustMode
     ) {
     }

@@ -21,6 +21,11 @@ Route::middleware('auth:sanctum')->group(function () {
 // Sensor Data and Device Control Routes
 Route::post('/sensor-data', [SensorDataController::class, 'store']);
 Route::post('/device-control', [DeviceControlController::class, 'update']);
+Route::post('/greenhouse/sync', [\App\Http\Controllers\Api\AutomationController::class, 'sync']);
+
+// Disease Review Routes
+Route::get('/disease', [\App\Http\Controllers\Api\DiseaseControllerAcrossTheProject::class, 'index']);
+Route::get('/disease/{id}', [\App\Http\Controllers\Api\DiseaseControllerAcrossTheProject::class, 'show']);
 
 Route::get('/test', function () {
     return 'api test';
