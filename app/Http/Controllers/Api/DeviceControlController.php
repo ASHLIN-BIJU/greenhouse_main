@@ -16,12 +16,20 @@ class DeviceControlController extends Controller
             'exhaust_mode' => 'required|boolean',
         ]);
 
+        $greenhouse = \App\Models\Greenhouse::where('product_id', $validated['device_id'])->first();
+        if ($greenhouse && $greenhouse->settings) {
+            $greenhouse->settings->update(['control_mode' => 'manual']);
+        }
+
         ControlUpdated::dispatch(
             $validated['device_id'],
             (bool) $validated['pump_mode'],
             (bool) $validated['exhaust_mode']
         );
 
-        return response()->json(['message' => 'Control command broadcasted successfully']);
+        return response()->json([
+            'message' => 'Control command broadcasted and mode set to manual',
+            'control_mode' => 'manual'
+        ]);
     }
 }
