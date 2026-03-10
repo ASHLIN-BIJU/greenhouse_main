@@ -99,9 +99,35 @@ Allows an authenticated user to update their greenhouse threshold settings.
 {
     "temperature_limit": 32.5,
     "humidity_limit": 65.0,
-    "soil_moisture_limit": 45.0
+    "soil_moisture_limit": 45.0,
+    "control_mode": "auto"
 }
 ```
+> [!NOTE]
+> `control_mode` can be `auto` or `manual`. In `auto` mode, the system automatically triggers the pump and exhaust based on thresholds.
+
+---
+
+## 6. Manual Device Control
+Allows an authenticated user to manually override device states. 
+
+**Method:** `POST`  
+**URL:** `http://localhost:8000/api/device-control`  
+**Headers:**
+- `Accept`: `application/json`
+- `Content-Type`: `application/json`
+- `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
+
+**Body (Raw JSON):**
+```json
+{
+    "device_id": "GH-112233",
+    "pump_mode": true,
+    "exhaust_mode": false
+}
+```
+> [!IMPORTANT]
+> Sending a manual control command will **automatically switch the greenhouse to `manual` mode**. To resume automation, you must update the settings back to `control_mode: auto`.
 
 ---
 

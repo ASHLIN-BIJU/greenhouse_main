@@ -12,19 +12,19 @@ class RegisteredProductSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\RegisteredProduct::create([
-            'product_id' => 'GH-908712',
-            'status' => 'unused',
-        ]);
+        $products = [
+            ['product_id' => 'GH-908712', 'status' => 'unused'],
+            ['product_id' => 'GH-908713', 'status' => 'used'],
+            ['product_id' => 'GH-TEST-123', 'status' => 'unused'],
+            ['product_id' => 'GH-112233', 'status' => 'unused'],
+            ['product_id' => 'GH-999999', 'status' => 'unused'],
+        ];
 
-        \App\Models\RegisteredProduct::create([
-            'product_id' => 'GH-908713',
-            'status' => 'used',
-        ]);
-
-        \App\Models\RegisteredProduct::create([
-            'product_id' => 'GH-TEST-123',
-            'status' => 'unused',
-        ]);
+        foreach ($products as $product) {
+            \App\Models\RegisteredProduct::firstOrCreate(
+                ['product_id' => $product['product_id']],
+                ['status' => $product['status']]
+            );
+        }
     }
 }

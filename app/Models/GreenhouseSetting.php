@@ -11,5 +11,6 @@ class GreenhouseSetting extends Model
         'temperature_limit',
         'humidity_limit',
         'soil_moisture_limit',
+        'control_mode',
     ];
 }

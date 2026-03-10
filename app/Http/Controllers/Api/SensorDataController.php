@@ -71,6 +71,19 @@ class SensorDataController extends Controller
                         'level' => $alertData['level'],
                     ]);
                 }
+
+                // 5. Auto Control Logic
+                if ($settings->control_mode === 'auto') {
+                    $pumpMode = $validated['soil_moisture'] < $settings->soil_moisture_limit;
+                    $exhaustMode = $validated['temperature'] > $settings->temperature_limit ||
+                        $validated['humidity'] > $settings->humidity_limit;
+
+                    \App\Events\ControlUpdated::dispatch(
+                        $validated['device_id'],
+                        $pumpMode,
+                        $exhaustMode
+                    );
+                }
             }
         }
 

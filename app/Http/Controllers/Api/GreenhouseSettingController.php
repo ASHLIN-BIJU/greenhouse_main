@@ -16,6 +16,7 @@ class GreenhouseSettingController extends Controller
             'temperature_limit' => 'nullable|numeric',
             'humidity_limit' => 'nullable|numeric',
             'soil_moisture_limit' => 'nullable|numeric',
+            'control_mode' => 'nullable|in:auto,manual',
         ]);
 
         $user = Auth::user();
