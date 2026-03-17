@@ -131,6 +131,80 @@ Allows an authenticated user to manually override device states.
 
 ---
 
+## 7. Synchronize Automation (No-Payload Trigger)
+Allows you to trigger automation for a specific greenhouse using only the `product_id`. It will automatically fetch the latest sensor data from the database and run threshold checks.
+
+**Method:** `POST`  
+**URL:** `http://localhost:8000/api/greenhouse/sync`  
+**Headers:**
+- `Accept`: `application/json`
+- `Content-Type`: `application/json`
+
+**Body (Raw JSON):**
+```json
+{
+    "product_id": "GH-112233",
+    "mode": "auto"
+}
+```
+> [!TIP]
+> Use this endpoint when you want current database values to trigger the pump/exhaust without sending a full sensor payload. You can also use it to force a switch back to `auto` mode.
+
+---
+
+## 8. Detailed Testing Workflows
+
+## 9. Disease Review API
+Fetch and view plant diseases fetched from the external API.
+
+**List All Diseases:**
+- **Method:** `GET`
+- **URL:** `http://localhost:8000/api/disease`
+
+**View Specific Disease:**
+- **Method:** `GET`
+- **URL:** `http://localhost:8000/api/disease/{id}`
+
+> [!NOTE]
+> Data is automatically fetched every 4 hours via the `fetch:disease-data` command. You can trigger it manually using `php artisan fetch:disease-data`.
+
+---
+
+## 10. Notifications (Alerts)
+Manage environmental alerts triggered by your greenhouse.
+
+**Fetch Notifications:**
+- **Method:** `GET`
+- **URL:** `http://localhost:8000/api/notifications`
+- **Headers:**
+    - `Accept`: `application/json`
+    - `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
+> [!TIP]
+> This returns a paginated list of alerts (latest first). Look for the `data` array in the response.
+
+**Delete Notification:**
+- **Method:** `DELETE`
+- **URL:** `http://localhost:8000/api/notifications/{id}`
+- **Headers:**
+    - `Accept`: `application/json`
+    - `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
+
+---
+
+## 11. Workflow: How to Test Notifications
+To verify that the system is correctly generating notifications when thresholds are breached, follow these steps:
+
+1. **Set Low Thresholds:**
+   Use the **Update Greenhouse Settings** endpoint (Section 5) to set a very low `temperature_limit` (e.g., `20.0`).
+2. **Send High Temperature Data:**
+   Use the **Test Sensor Data** endpoint (Section 4) to send a temperature well above that limit (e.g., `35.0`).
+3. **Check Notifications:**
+   Call the **Fetch Notifications** endpoint (Section 10). You should see a brand new alert with the message: `"High Temp: 35°C"`.
+4. **Clean Up:**
+   Delete the notification using the **Delete Notification** endpoint (Section 10) and reset your settings (Section 5).
+
+---
+
 ## Troubleshooting Tips
 - **CSRF Issues:** If you get a `419 Page Expired`, ensure you are calling `GET http://localhost:8000/sanctum/csrf-cookie` first in Postman to initialize the session.
 - **Validation Errors:** If you get a `422 Unprocessable Entity`, check the response body for specific field errors.
