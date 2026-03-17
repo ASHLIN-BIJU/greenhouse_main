@@ -171,6 +171,7 @@ Fetch and view plant diseases fetched from the external API.
 
 ---
 
+
 ## Troubleshooting Tips
 - **CSRF Issues:** If you get a `419 Page Expired`, ensure you are calling `GET http://localhost:8000/sanctum/csrf-cookie` first in Postman to initialize the session.
 - **Validation Errors:** If you get a `422 Unprocessable Entity`, check the response body for specific field errors.
