@@ -79,6 +79,7 @@ To test if your WebSocket is working, you can simulate a sensor device sending d
 > [!IMPORTANT]
 > 1. Ensure `php artisan reverb:start` is running in a terminal.
 > 2. Open Alice's Dashboard (or your WebSocket client) to see the live update when you click **Send** in Postman.
+> 3. The API response will now include `area_temperature`, which is the average temperature for all devices in that city/location.
 
 ---
 
@@ -170,40 +171,6 @@ Fetch and view plant diseases fetched from the external API.
 
 ---
 
-## 10. Notifications (Alerts)
-Manage environmental alerts triggered by your greenhouse.
-
-**Fetch Notifications:**
-- **Method:** `GET`
-- **URL:** `http://localhost:8000/api/notifications`
-- **Headers:**
-    - `Accept`: `application/json`
-    - `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
-> [!TIP]
-> This returns a paginated list of alerts (latest first). Look for the `data` array in the response.
-
-**Delete Notification:**
-- **Method:** `DELETE`
-- **URL:** `http://localhost:8000/api/notifications/{id}`
-- **Headers:**
-    - `Accept`: `application/json`
-    - `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
-
----
-
-## 11. Workflow: How to Test Notifications
-To verify that the system is correctly generating notifications when thresholds are breached, follow these steps:
-
-1. **Set Low Thresholds:**
-   Use the **Update Greenhouse Settings** endpoint (Section 5) to set a very low `temperature_limit` (e.g., `20.0`).
-2. **Send High Temperature Data:**
-   Use the **Test Sensor Data** endpoint (Section 4) to send a temperature well above that limit (e.g., `35.0`).
-3. **Check Notifications:**
-   Call the **Fetch Notifications** endpoint (Section 10). You should see a brand new alert with the message: `"High Temp: 35°C"`.
-4. **Clean Up:**
-   Delete the notification using the **Delete Notification** endpoint (Section 10) and reset your settings (Section 5).
-
----
 
 ## Troubleshooting Tips
 - **CSRF Issues:** If you get a `419 Page Expired`, ensure you are calling `GET http://localhost:8000/sanctum/csrf-cookie` first in Postman to initialize the session.
