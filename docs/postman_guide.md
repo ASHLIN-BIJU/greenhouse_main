@@ -243,45 +243,72 @@ After testing, ensure you:
 
 ---
 
-## 13. WebSocket "Always-On" Testing (Luckfox Board Simulator)
-To test the persistent connection that the Luckfox board will use, follow these steps in Postman's **WebSocket Request** tab.
+## 13. Step-by-Step WebSocket Testing (Luckfox Board Simulator)
+This section provides a complete guide for first-time Postman users to test the real-time WebSocket connection used by the Greenhouse sensors.
 
-### A. Connection
-- **URL:** `ws://localhost:8080/app/nywcgjbzz5yhljss7pbt?protocol=7&client=js&version=8.4.0-rc2&flash=false`
-- **Click Connect.** You should see a `pusher:connection_established` message.
+### A. Pre-requisites (Check your Terminal)
+For the WebSocket connection to work and process your data, **three processes** must be running simultaneously in your terminal:
+1.  **Web Server:** `php artisan serve` (Runs the API)
+2.  **WebSocket Server:** `php artisan reverb:start` (Handles the real-time link)
+3.  **Sensor Processor:** `php artisan app:listen-sensor-data` (This command **must** be running to "hear" your sensor data and send feedback).
 
-### B. Subscribe to Control Channel
-Send the following JSON to listen for command updates:
-```json
-{
-    "event": "pusher:subscribe",
-    "data": {
+> [!IMPORTANT]
+> If `app:listen-sensor-data` is not running, you can connect and send data, but the server will remain silent and won't send any feedback messages.
+
+### B. Open a WebSocket Request
+1.  In Postman, click the **New** button (top-left) or the **+** tab.
+2.  Select **WebSocket** from the list of request types.
+3.  You will see a new tab with a "URL" bar and a "Connect" button.
+
+### B. Configure the Connection
+1.  **URL:** Enter the following URL into the address bar:
+    ```
+    ws://127.0.0.1:8080/app/nywcgjbzz5yhljss7pbt?protocol=7&client=js&version=8.4.0-rc2&flash=false
+    ```
+2.  **What this URL means:**
+    - `ws://127.0.0.1:8080`: This is your local Reverb server (using IPv4 to avoid resolution issues).
+    - `app/nywcgjbzz5yhljss7pbt`: This uses your unique `REVERB_APP_KEY`.
+    - `protocol=7...`: These are mandatory Pusher-protocol parameters that Reverb expects.
+3.  Click the **Connect** button.
+4.  **Confirm Connection:** In the **Messages** pane below, you should see:
+    ```json
+    { "event": "pusher:connection_established", "data": "{\"socket_id\":\"...\"}" }
+    ```
+
+### C. Subscribe to a Channel
+WebSockets use "channels" to organize messages. You must subscribe to your greenhouse's specific channel to receive updates.
+1.  In the **Message** box (where it says "Compose Message"), paste this JSON:
+    ```json
+    {
+        "event": "pusher:subscribe",
+        "data": {
+            "channel": "control.GH-112233"
+        }
+    }
+    ```
+2.  Click **Send**.
+3.  **Confirm Subscription:** You should see a `pusher_internal:subscription_succeeded` message in the log.
+
+### D. Simulate Sensor Data (The "Whisper")
+Now, simulate the Luckfox board sending sensor data to the server. This is called a "client event" or "whisper".
+1.  In the **Message** box, paste this JSON:
+    ```json
+    {
+        "event": "client-sensor-reading",
+        "data": {
+            "device_id": "GH-112233",
+            "temperature": 35.0,
+            "humidity": 80,
+            "soil_moisture": 30
+        },
         "channel": "control.GH-112233"
     }
-}
-```
+    ```
+2.  Click **Send**.
 
-### C. Simulate Sensor Uplink (The "Whisper")
-While connected, you can "whisper" sensor data directly to the server:
-```json
-{
-    "event": "client-sensor-reading",
-    "data": {
-        "device_id": "GH-112233",
-        "temperature": 35.0,
-        "humidity": 80,
-        "soil_moisture": 30
-    },
-    "channel": "control.GH-112233"
-}
-```
-
-### D. Observe "Always-On" Commands (Control Feedback)
-As soon as you send your sensor reading whisper (Step C), if your `app:listen-sensor-data` command is running, it will automatically process the data and **broadcast a control command back on the same channel.** 
-
-**How to observe it:**
-1.  **Watch the WebSocket tab in Postman.** You will see a new message arrive from the server instantly.
-2.  **The Message Format:**
+### E. Monitor Server Feedback (Real-Time Control)
+As soon as you send the data, the server processes it. If the values exceed your thresholds, the server will immediately broadcast a control command back to you.
+1.  **Watch the Messages pane.** You should see an incoming message from the server like this:
     ```json
     {
         "event": "App\\Events\\ControlUpdated",
@@ -289,12 +316,12 @@ As soon as you send your sensor reading whisper (Step C), if your `app:listen-se
         "channel": "control.GH-112233"
     }
     ```
-3.  **What this means:** This is the server telling the Luckfox board to turn **on** the **AC**, **Exhaust**, and **Pump** because your thresholds were exceeded.
+2.  **What this means:** The server is instructing the "board" (which you are simulating in Postman) to turn **ON** the pump, exhaust, and AC because the temperature (35.0) and humidity (80) are too high.
 
-### E. Where is my data stored?
--   **Table:** All valid sensor readings are stored in the **`sensor_readings`** table in your database.
--   **Efficiency Logic:** The system only adds a new row to the database if the values have **changed** significantly from the last reading. This keeps your database from filling up with identical copies of the same numbers every second.
--   **Confirmation:** You can verify it by running:
-    ```bash
-    php artisan tinker --execute="print_r(App\\Models\\SensorReading::latest()->first()->toArray())"
-    ```
+### F. Troubleshooting WebSocket Issues
+- **Connection Failed:** Ensure `php artisan reverb:start` is running in your terminal.
+- **No Response after Whisper:** Ensure `php artisan app:listen-sensor-data` is running (this command processes the whispers).
+- **Data not persisting:** The system only saves data to the database if the values have changed significantly to save space. Check the `sensor_readings` table or run:
+  ```bash
+  php artisan tinker --execute="print_r(App\\Models\\SensorReading::latest()->first()->toArray())"
+  ```

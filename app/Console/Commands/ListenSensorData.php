@@ -40,53 +40,103 @@ class ListenSensorData extends Command
      * Execute the console command.
      */
     public function handle()
-    {
-        $host = config('reverb.servers.reverb.hostname', 'localhost');
-        $port = config('reverb.servers.reverb.port', 8080);
-        $key = config('reverb.apps.apps.0.key');
-        
-        $url = "ws://{$host}:{$port}/app/{$key}?protocol=7&client=js&version=8.4.0-rc2&flash=false";
-        
-        $this->info("Connecting to WebSocket at: {$url}");
+{
+    $host = '127.0.0.1'; // force IPv4, localhost resolves to IPv6 first on this system
+    $port = config('reverb.servers.reverb.port', 8080);
+    $key = config('reverb.apps.apps.0.key');
 
-        $loop = Loop::get();
-        $connector = new Connector($loop);
-        $negotiator = new ClientNegotiator(new \GuzzleHttp\Psr7\HttpFactory());
+    $url = "ws://{$host}:{$port}/app/{$key}?protocol=7&client=js&version=8.4.0-rc2&flash=false";
 
-        $connector->connect("{$host}:{$port}")->then(function ($stream) use ($url, $negotiator) {
-            $this->stream = $stream;
-            $uri = new \GuzzleHttp\Psr7\Uri($url);
-            $request = $negotiator->generateRequest($uri);
-            
-            $stream->write((string) $request);
+    $this->info("Connecting to WebSocket at: {$url}");
 
-            $buffer = new MessageBuffer(
-                new CloseFrameChecker(),
-                function ($message) {
-                    $this->handleMessage($message->getPayload());
-                }
-            );
+    $loop = Loop::get();
+    $connector = new Connector($loop);
+    $negotiator = new ClientNegotiator(new \GuzzleHttp\Psr7\HttpFactory());
 
-            $stream->on('data', function ($data) use ($buffer) {
+    $connector->connect("{$host}:{$port}")->then(function ($stream) use ($url, $negotiator) {
+        $this->stream = $stream;
+        $uri = new \GuzzleHttp\Psr7\Uri($url);
+        $request = $negotiator->generateRequest($uri);
+
+        // ✅ Serialize PSR-7 Request into raw HTTP string
+        $rawRequest = $request->getMethod() . ' '
+            . $request->getRequestTarget() . ' HTTP/'
+            . $request->getProtocolVersion() . "\r\n";
+
+        foreach ($request->getHeaders() as $name => $values) {
+            $rawRequest .= $name . ': ' . implode(', ', $values) . "\r\n";
+        }
+        $rawRequest .= "\r\n";
+
+        // TEMPORARY DEBUG LINE
+        $this->line("<fg=yellow>Sending handshake:\n{$rawRequest}</>");
+
+        $stream->write($rawRequest);
+
+        $buffer = new MessageBuffer(
+            new CloseFrameChecker(),
+            function ($message) {
+                $this->handleMessage($message->getPayload());
+            },
+            null,
+            false // expectMask = false for client-side
+        );
+
+        $handshakeBuffer = '';
+        $isUpgraded = false;
+
+        $stream->on('data', function ($data) use ($buffer, &$handshakeBuffer, &$isUpgraded, $negotiator, $request) {
+            if ($isUpgraded) {
                 $buffer->onData($data);
-            });
+                return;
+            }
 
-            $this->info("Handshake sent. Waiting for connection...");
+            $handshakeBuffer .= $data;
+            if (strpos($handshakeBuffer, "\r\n\r\n") !== false) {
+                $parts = explode("\r\n\r\n", $handshakeBuffer, 2);
+                $responseStr = $parts[0] . "\r\n\r\n";
+                $remainingData = $parts[1] ?? '';
 
-        }, function ($e) {
-            $this->error("Could not connect: " . $e->getMessage());
+                try {
+                    $response = \GuzzleHttp\Psr7\Message::parseResponse($responseStr);
+                    $negotiator->validateResponse($request, $response);
+                    
+                    $this->info("Handshake successful! Upgraded to WebSocket.");
+                    $isUpgraded = true;
+                    
+                    if ($remainingData !== '') {
+                        $buffer->onData($remainingData);
+                    }
+                } catch (\Exception $e) {
+                    $this->error("Handshake failed: " . $e->getMessage());
+                    $this->stream->close();
+                }
+            }
         });
 
-        $loop->run();
-    }
+        $stream->on('error', function (\Exception $e) {
+            $this->error("Stream error: " . $e->getMessage());
+        });
+
+        $stream->on('close', function () {
+            $this->warn("Connection closed.");
+        });
+
+        $this->info("Handshake sent. Waiting for connection...");
+
+    }, function ($e) {
+        $this->error("Could not connect: " . $e->getMessage());
+    });
+
+    $loop->run();
+}
 
     protected $stream;
 
     protected function handleMessage($payload)
     {
-        $this->line("<fg=gray>Raw Message: {$payload}</>");
         $msg = json_decode($payload, true);
-        
+    
         if (!$msg || !isset($msg['event'])) return;
 
         // 1. Connection Established
@@ -96,14 +146,24 @@ class ListenSensorData extends Command
             return;
         }
 
-        // 2. Handle Sensor Readings (Whispers/Client Events)
+        // 2. Handle Ping (Must respond with Pong to stay alive)
+        if ($msg['event'] === 'pusher:ping') {
+            $this->stream->write($this->mask(json_encode(['event' => 'pusher:pong'])));
+            return;
+        }
+
+        // 3. Handle Sensor Readings (Whispers/Client Events)
         if ($msg['event'] === 'client-sensor-reading' || str_ends_with($msg['event'], 'SensorDataUpdated')) {
-            $data = is_string($msg['data']) ? json_decode($msg['data'], true) : $msg['data'];
-            
-            if (isset($data['device_id'], $data['temperature'], $data['humidity'], $data['soil_moisture'])) {
-                $this->info("Received sensor data via WS: " . json_encode($data));
-                $this->service->process($data);
-                $this->info("Data processed and saved.");
+            try {
+                $data = is_string($msg['data']) ? json_decode($msg['data'], true) : $msg['data'];
+                
+                if (isset($data['device_id'], $data['temperature'], $data['humidity'], $data['soil_moisture'])) {
+                    $this->info("Received sensor data via WS: " . json_encode($data));
+                    $this->service->process($data);
+                    $this->info("Data processed and saved.");
+                }
+            } catch (\Exception $e) {
+                $this->error("Error processing data: " . $e->getMessage());
             }
         }
     }
@@ -129,7 +189,10 @@ class ListenSensorData extends Command
 
     protected function mask($payload)
     {
-        $frame = new Frame($payload, true, Frame::OP_TEXT);
+        $frame = new Frame($payload);
+        $frame->maskPayload();
         return $frame->getContents();
     }
+
+
 }
