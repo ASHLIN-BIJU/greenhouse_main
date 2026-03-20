@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Greenhouse Tester</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            letter-spacing: -0.025em;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        input, textarea {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary { background-color: var(--primary); color: #000; }
+        .btn-success { background-color: var(--success); color: #000; }
+        .btn-warning { background-color: var(--warning); color: #000; }
+
+        .log-area {
+            background: #000;
+            height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            border: 1px solid #334155;
+        }
+
+        .log-entry { margin-bottom: 0.5rem; display: flex; gap: 0.5rem; }
+        .log-time { color: var(--text-dim); }
+        .log-in { color: var(--success); }
+        .log-out { color: var(--primary); }
+        .log-error { color: #f43f5e; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 1rem;
+        }
+        .status-disconnected { background: #451a03; color: #f97316; }
+        .status-connected { background: #064e3b; color: #10b981; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>WebSocket Tester <span id="statusBadge" class="status-badge status-disconnected">Disconnected</span></h1>
+
+    <div class="config-grid">
+        <div class="field">
+            <label>Host</label>
+            <input type="text" id="host" value="127.0.0.1">
+        </div>
+        <div class="field">
+            <label>Port</label>
+            <input type="text" id="port" value="8080">
+        </div>
+        <div class="field" style="grid-column: span 2">
+            <label>App Key</label>
+            <input type="text" id="appKey" value="nywcgjbzz5yhljss7pbt">
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button id="connectBtn" class="btn-primary">Connect</button>
+        <button id="subscribeBtn" class="btn-warning" disabled>Subscribe (GH-112233)</button>
+        <button id="sendBtn" class="btn-success" disabled>Send Whisper</button>
+    </div>
+
+    <div class="field" style="margin-bottom: 2rem;">
+        <label>Payload (Sensor Data)</label>
+        <textarea id="payload" rows="5">{
+    "device_id": "GH-112233",
+    "temperature": 39.5,
+    "humidity": 88,
+    "soil_moisture": 15
+}</textarea>
+    </div>
+
+    <div id="log" class="log-area">
+        <div class="log-entry"><span class="log-time">System:</span> Ready to test.</div>
+    </div>
+</div>
+
+<script>
+    let ws = null;
+    const logArea = document.getElementById('log');
+    const connectBtn = document.getElementById('connectBtn');
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusBadge = document.getElementById('statusBadge');
+
+    function log(msg, type = 'system') {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        const time = new Date().toLocaleTimeString();
+        div.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${msg}</span>`;
+        logArea.appendChild(div);
+        logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    connectBtn.onclick = () => {
+        if (ws) {
+            ws.close();
+            return;
+        }
+
+        const host = document.getElementById('host').value;
+        const port = document.getElementById('port').value;
+        const key = document.getElementById('appKey').value;
+        const url = `ws://${host}:${port}/app/${key}?protocol=7&client=js&version=8.4.0-rc2&flash=false`;
+
+        log(`Connecting to ${url}...`);
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            log('Connected to Server', 'in');
+            statusBadge.className = 'status-badge status-connected';
+            statusBadge.innerText = 'Connected';
+            connectBtn.innerText = 'Disconnect';
+            subscribeBtn.disabled = false;
+        };
+
+        ws.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            log(`RECV: ${JSON.stringify(data)}`, 'in');
+
+            if (data.event === 'App\\Events\\ControlUpdated') {
+                log('⚡ BINGO! RECEIVED FEEDBACK FROM SERVER!', 'success');
+            }
+        };
+
+        ws.onclose = () => {
+            log('Disconnected', 'error');
+            statusBadge.className = 'status-badge status-disconnected';
+            statusBadge.innerText = 'Disconnected';
+            connectBtn.innerText = 'Connect';
+            subscribeBtn.disabled = true;
+            sendBtn.disabled = true;
+            ws = null;
+        };
+
+        ws.onerror = (e) => log('WebSocket Error occurred', 'error');
+    };
+
+    subscribeBtn.onclick = () => {
+        const channel = 'control.GH-112233';
+        log(`Subscribing to ${channel}...`, 'out');
+        ws.send(JSON.stringify({
+            event: 'pusher:subscribe',
+            data: { channel }
+        }));
+        sendBtn.disabled = false;
+    };
+
+    sendBtn.onclick = () => {
+        const channel = 'control.GH-112233';
+        const data = JSON.parse(document.getElementById('payload').value);
+        log(`Sending whisper to ${channel}...`, 'out');
+        ws.send(JSON.stringify({
+            event: 'client-sensor-reading',
+            data: data,
+            channel: channel
+        }));
+    };
+</script>
+
+</body>
+</html>

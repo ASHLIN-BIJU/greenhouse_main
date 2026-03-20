@@ -14,6 +14,7 @@ class DeviceControlController extends Controller
             'device_id' => 'required|string',
             'pump_mode' => 'required|boolean',
             'exhaust_mode' => 'required|boolean',
+            'ac_mode' => 'required|boolean',
         ]);
 
         $greenhouse = \App\Models\Greenhouse::where('product_id', $validated['device_id'])->first();
@@ -24,7 +25,8 @@ class DeviceControlController extends Controller
         ControlUpdated::dispatch(
             $validated['device_id'],
             (bool) $validated['pump_mode'],
-            (bool) $validated['exhaust_mode']
+            (bool) $validated['exhaust_mode'],
+            (bool) $validated['ac_mode']
         );
 
         return response()->json([
