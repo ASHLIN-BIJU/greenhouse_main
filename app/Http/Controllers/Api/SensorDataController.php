@@ -23,10 +23,10 @@ class SensorDataController extends Controller
         $result = $sensorDataService->process($validated);
 
         return response()->json([
-            'message' => $result['stored'] ? 'Sensor data stored and broadcasted' : 'Data unchanged; broadcasted only',
+            'message' => $result['stored'] ? 'Sensor data stored' : 'Data unchanged',
             'stored' => $result['stored'],
-            'data' => $result['data'],
-            'alert_ids' => $result['alert_ids'] ?? []
+            'area_temperature' => $result['automation']['area_temperature'] ?? null,
+            'data' => $result['data']
         ]);
     }
 }
