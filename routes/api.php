@@ -23,9 +23,12 @@ Route::post('/sensor-data', [SensorDataController::class, 'store']);
 Route::post('/device-control', [DeviceControlController::class, 'update']);
 Route::post('/greenhouse/sync', [\App\Http\Controllers\Api\AutomationController::class, 'sync']);
 
-// Disease Review Routes
-Route::get('/disease', [\App\Http\Controllers\Api\DiseaseControllerAcrossTheProject::class, 'index']);
-Route::get('/disease/{id}', [\App\Http\Controllers\Api\DiseaseControllerAcrossTheProject::class, 'show']);
+// Disease Detection Routes
+Route::group(['prefix' => 'disease'], function () {
+    Route::post('/detect', [\App\Http\Controllers\Api\DiseaseController::class, 'detect']);
+    Route::get('/', [\App\Http\Controllers\Api\DiseaseController::class, 'index']);
+    Route::get('/{id}', [\App\Http\Controllers\Api\DiseaseController::class, 'show']);
+});
 
 Route::get('/test', function () {
     return 'api test';
