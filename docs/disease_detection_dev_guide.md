@@ -54,6 +54,26 @@ This feature allows the greenhouse system to capture plant images (via Luckfox b
    php artisan storage:link
    ```
 
+## Testing (Postman Guide)
+
+### 1. Detect Disease (POST)
+- **URL**: `{{APP_URL}}/api/disease/detect`
+- **Method**: `POST`
+- **Body**: `form-data`
+- **Key**: `image` (Change type to **File**)
+- **Value**: Upload a plant leaf image.
+- **Response**: Returns a 201 Created with the disease data and `image_url`.
+
+### 2. Get All History (GET)
+- **URL**: `{{APP_URL}}/api/disease`
+- **Method**: `GET`
+- **Response**: 200 OK with a list of all records.
+
+### 3. Get Single Record (GET)
+- **URL**: `{{APP_URL}}/api/disease/{id}`
+- **Method**: `GET`
+- **Response**: 200 OK with specific record data.
+
 ## Switching to Live API
 When the real external API is available:
 1. Update `DISEASE_API_URL` and `DISEASE_API_KEY` in `.env`.
