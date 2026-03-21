@@ -54,6 +54,27 @@ This feature allows the greenhouse system to capture plant images (via Luckfox b
    php artisan storage:link
    ```
 
+## Database Seeding
+To populate the `diseases` table with sample data for testing, run:
+```bash
+php artisan db:seed --class=DiseaseSeeder
+```
+This will add sample records for "Leaf Blight" and "Powdery Mildew" to your local database.
+
+## API Logic (Mock vs Real)
+
+The system is designed to be "Plug and Play". The logic is handled in `app/Services/DiseaseDetectionService.php`.
+
+### Without API (Mock Mode)
+- **Condition**: `DISEASE_API_URL` is empty in `.env`.
+- **Behavior**: The service immediately returns a predefined JSON response (Mock). No external network calls are made.
+- **Use Case**: Development and testing without an internet connection or API key.
+
+### With API (Real Mode)
+- **Condition**: `DISEASE_API_URL` is set to a valid endpoint.
+- **Behavior**: The service uses Guzzle HTTP to send a `multipart/form-data` request containing the plant image and the `DISEASE_API_KEY`.
+- **Use Case**: Production environment or live testing with the actual disease detection server.
+
 ## Testing (Postman Guide)
 
 ### 1. Detect Disease (POST)
