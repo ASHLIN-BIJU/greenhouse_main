@@ -192,14 +192,14 @@ Fetch and view plant diseases fetched from the external API.
 ## 10. Notifications (Alerts)
 Manage environmental alerts triggered by your greenhouse.
 
-**Fetch Notifications:**
+**Fetch Latest Notification:**
 - **Method:** `GET`
 - **URL:** `http://localhost:8000/api/notifications`
 - **Headers:**
     - `Accept`: `application/json`
     - `Authorization`: `Bearer <YOUR_TOKEN_HERE>`
 > [!TIP]
-> This returns a paginated list of alerts (latest first). Look for the `data` array in the response.
+> This returns the **latest single new alert** that occurred after a specific ID. You can pass `?last_id=123` to only get alerts newer than ID 123. If no new alerts are found, it returns "No new notification".
 
 **Delete Notification:**
 - **Method:** `DELETE`
