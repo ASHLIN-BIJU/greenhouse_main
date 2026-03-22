@@ -42,4 +42,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the address associated with the user.
+     */
+    public function address()
+    {
+        return $this->hasOne(Address::class);
+    }
 }
