@@ -46,7 +46,19 @@ class DiseaseDetectionService
                 ],
             ]);
 
-            return json_decode($response->getBody()->getContents(), true);
+            $apiData = json_decode($response->getBody()->getContents(), true);
+
+            // Map external API fields to our database fields
+            return [
+                'disease_name'        => $apiData['display_name'],
+                'description'         => $apiData['description'],
+                'symptoms'            => $apiData['symptoms'],
+                'causes'              => 'Not specified by detection API',
+                'preventive_measures' => $apiData['prevention'],
+                'treatment'           => $apiData['solutions'],
+                'confidence_value'    => (float) rtrim($apiData['confidence'], '%'),
+            ];
+
         } catch (GuzzleException $e) {
             Log::error('Disease Detection API Error: ' . $e->getMessage());
             throw new \Exception('Failed to connect to external disease detection API: ' . $e->getMessage());
@@ -54,20 +66,20 @@ class DiseaseDetectionService
     }
 
     /**
-     * Returns the required mock response.
+     * Returns a mock response matching the real API field mapping.
      *
      * @return array
      */
     private function getMockResponse(): array
     {
         return [
-            "disease_name" => "Leaf Blight",
-            "description" => "A fungal disease affecting plant leaves",
-            "symptoms" => "Yellow spots on leaves, wilting",
-            "causes" => "Fungal infection due to high humidity",
-            "preventive_measures" => "Ensure proper air circulation",
-            "treatment" => "Apply fungicide every 7 days",
-            "confidence_value" => 92.5
+            'disease_name'        => 'Late Blight',
+            'description'         => 'Late Blight is one of the most dangerous tomato diseases. It moves incredibly fast in cool, wet conditions and can kill an entire healthy plant in just a few days.',
+            'symptoms'            => 'Large, dark, oily-looking patches appearing on the leaves and stems. White, fuzzy mold growing on the underside of patches during humid mornings.',
+            'causes'              => 'Not specified by detection API',
+            'preventive_measures' => 'Avoid overhead watering and ensure your garden has excellent drainage. Plant resistant varieties.',
+            'treatment'           => 'Pull out and destroy heavily infected plants immediately. For early infections, apply fungicide like chlorothalonil or copper spray every 5 days.',
+            'confidence_value'    => 100.0,
         ];
     }
 }

@@ -85,6 +85,17 @@ class TestDataSeeder extends Seeder
             // Mark product as used
             RegisteredProduct::where('product_id', $ghData['product_id'])->update(['status' => 'used']);
 
+            // Create Address
+            $user->address()->firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'address' => $ghData['location'] . ' Street',
+                    'city' => $ghData['location'],
+                    'state' => 'Kerala',
+                    'pincode' => '686001'
+                ]
+            );
+
             // Create Settings
             GreenhouseSetting::firstOrCreate(
                 ['greenhouse_id' => $greenhouse->id],
