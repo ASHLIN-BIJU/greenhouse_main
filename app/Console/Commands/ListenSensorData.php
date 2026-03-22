@@ -146,6 +146,12 @@ class ListenSensorData extends Command
             return;
         }
 
+        // 1.5. Subscription Succeeded
+        if ($msg['event'] === 'pusher_internal:subscription_succeeded') {
+            $this->info("✅ Successfully joined channel: " . ($msg['channel'] ?? 'unknown'));
+            return;
+        }
+
         // 2. Handle Ping (Must respond with Pong to stay alive)
         if ($msg['event'] === 'pusher:ping') {
             $this->stream->write($this->mask(json_encode(['event' => 'pusher:pong'])));

@@ -214,48 +214,53 @@
             subscribeBtn.disabled = false;
         };
 
-        ws.onmessage = (e) => {
-            const data = JSON.parse(e.data);
-            log(`RECV: ${JSON.stringify(data)}`, 'in');
+    ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        log(`RECV: ${JSON.stringify(data)}`, 'in');
 
-            if (data.event === 'App\\Events\\ControlUpdated') {
-                log('⚡ BINGO! RECEIVED FEEDBACK FROM SERVER!', 'success');
-            }
-        };
+        if (data.event === 'pusher_internal:subscription_succeeded') {
+            log('✅ SUBSCRIPTION CONFIRMED!', 'success');
+            sendBtn.disabled = false;
+        }
 
-        ws.onclose = () => {
-            log('Disconnected', 'error');
-            statusBadge.className = 'status-badge status-disconnected';
-            statusBadge.innerText = 'Disconnected';
-            connectBtn.innerText = 'Connect';
-            subscribeBtn.disabled = true;
-            sendBtn.disabled = true;
-            ws = null;
-        };
-
-        ws.onerror = (e) => log('WebSocket Error occurred', 'error');
+        if (data.event === 'App\\Events\\ControlUpdated') {
+            log('⚡ BINGO! RECEIVED FEEDBACK FROM SERVER!', 'success');
+        }
     };
 
-    subscribeBtn.onclick = () => {
-        const channel = 'control.GH-112233';
-        log(`Subscribing to ${channel}...`, 'out');
-        ws.send(JSON.stringify({
-            event: 'pusher:subscribe',
-            data: { channel }
-        }));
-        sendBtn.disabled = false;
+    ws.onclose = () => {
+        log('Disconnected', 'error');
+        statusBadge.className = 'status-badge status-disconnected';
+        statusBadge.innerText = 'Disconnected';
+        connectBtn.innerText = 'Connect';
+        subscribeBtn.disabled = true;
+        sendBtn.disabled = true;
+        ws = null;
     };
 
-    sendBtn.onclick = () => {
-        const channel = 'control.GH-112233';
-        const data = JSON.parse(document.getElementById('payload').value);
-        log(`Sending whisper to ${channel}...`, 'out');
-        ws.send(JSON.stringify({
-            event: 'client-sensor-reading',
-            data: data,
-            channel: channel
-        }));
-    };
+    ws.onerror = (e) => log('WebSocket Error occurred', 'error');
+};
+
+subscribeBtn.onclick = () => {
+    const channel = 'control.GH-112233';
+    log(`Subscribing to ${channel}...`, 'out');
+    ws.send(JSON.stringify({
+        event: 'pusher:subscribe',
+        data: { channel }
+    }));
+    // sendBtn.disabled = false; // MOVED TO onmessage
+};
+
+sendBtn.onclick = () => {
+    const channel = 'control.GH-112233';
+    const data = JSON.parse(document.getElementById('payload').value);
+    log(`Sending whisper to ${channel}...`, 'out');
+    ws.send(JSON.stringify({
+        event: 'client-sensor-reading',
+        data: data,
+        channel: channel
+    }));
+};
 </script>
 
 </body>
