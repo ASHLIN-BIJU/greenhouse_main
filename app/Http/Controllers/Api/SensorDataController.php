@@ -3,10 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\SensorReading;
-use App\Models\Greenhouse;
-use App\Models\Alert;
-use App\Events\SensorDataUpdated;
 use Illuminate\Http\Request;
 
 class SensorDataController extends Controller

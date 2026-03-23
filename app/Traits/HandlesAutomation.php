@@ -17,7 +17,7 @@ trait HandlesAutomation
      * @param string|null $modeOverride Optionally set the control mode before running automation
      * @return array
      */
-    public function runAutomation(Greenhouse $greenhouse, ?string $modeOverride = null): array
+    public function runAutomation(Greenhouse $greenhouse, array $data,  ?string $modeOverride = null): array
     {
         if ($modeOverride) {
             $greenhouse->settings()->update(['control_mode' => $modeOverride]);
@@ -70,7 +70,7 @@ trait HandlesAutomation
             $ac = $latestReading->temperature > $settings->temperature_limit;
             $exhaust = $latestReading->humidity > $settings->humidity_limit;
 
-            \App\Events\ControlUpdated::dispatch($greenhouse->product_id, $pump, $ac, $exhaust);
+            ControlUpdated::dispatch($greenhouse->product_id, $pump, $ac, $exhaust, $data);
             $controlTriggered = true;
 
             $deviceStatus = [

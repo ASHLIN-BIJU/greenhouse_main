@@ -10,7 +10,6 @@ use Ratchet\RFC6455\Messaging\Frame;
 use Ratchet\RFC6455\Messaging\MessageBuffer;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
 use Ratchet\RFC6455\Handshake\ClientNegotiator;
-use GuzzleHttp\Psr7\Request;
 
 class ListenSensorData extends Command
 {

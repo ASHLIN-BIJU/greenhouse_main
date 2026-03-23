@@ -35,6 +35,10 @@ class DiseaseController extends Controller
         }
 
         try {
+
+            
+
+
             // Save image locally
             $image = $request->file('image');
             $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
