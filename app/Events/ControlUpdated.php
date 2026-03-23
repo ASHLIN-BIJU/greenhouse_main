@@ -18,7 +18,8 @@ class ControlUpdated implements ShouldBroadcast
         public string $deviceId,
         public bool $pumpMode,
         public bool $exhaustMode,
-        public bool $acMode
+        public bool $acMode,
+        public array $data
     ) {
     }
 

@@ -11,7 +11,7 @@ use App\Events\ControlUpdated;
 class SensorDataService
 {
     use \App\Traits\HandlesAutomation;
-
+ 
     /**
      * Process incoming sensor data.
      * 
@@ -41,7 +41,7 @@ class SensorDataService
         $greenhouse = Greenhouse::where('product_id', $data['device_id'])->first();
         $automationResult = [];
         if ($greenhouse) {
-            $automationResult = $this->runAutomation($greenhouse);
+            $automationResult = $this->runAutomation($greenhouse,$data);
         }
 
         // 4. Always broadcast for real-time dashboard updates
