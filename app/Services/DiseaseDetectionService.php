@@ -14,8 +14,7 @@ class DiseaseDetectionService
 
     public function __construct()
     {
-        $this->apiUrl = env('DISEASE_API_URL');
-        $this->apiKey = env('DISEASE_API_KEY');
+        $this->apiUrl = "https://granularly-vapoury-tawnya.ngrok-free.dev/api/diagnose/";
         $this->client = new Client();
     }
 

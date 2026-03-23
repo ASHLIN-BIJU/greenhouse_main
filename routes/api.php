@@ -34,3 +34,6 @@ Route::group(['prefix' => 'disease'], function () {
 Route::get('/test', function () {
     return 'api test';
 });
+
+Route::get('/profile/details',
+[\App\Http\Controllers\Api\ProfileController::class,'getProfileDetails']);
